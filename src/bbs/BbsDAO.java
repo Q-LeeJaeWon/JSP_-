@@ -8,9 +8,13 @@ import java.util.ArrayList;
 
 public class BbsDAO {
 	private Connection conn;
+//	private PreparedStatement pstmt;
 	private ResultSet rs;
 
+//	oracle 처리부분
 	public BbsDAO() {
+		
+//		생성자를 만들어준다.
 		try {
 			String dbURL = "jdbc:oracle:thin:@localhost:1523:orcll";
 			String dbID = "hr";
@@ -23,6 +27,7 @@ public class BbsDAO {
 		}
 	}
 
+//	현재의 시간을 가져오는 함수
 	public String getDate() {
 //		String SQL = "SELECT NOW()";	// MySQL 용 데이터
 		String SQL = "select to_char(sysdate, 'yyyy-mm-dd') from dual";
@@ -39,6 +44,8 @@ public class BbsDAO {
 
 	}
 
+	
+//	게시글 번호 가져오는 함수
 	public int getNext() {
 		String SQL = "SELECT bbsID FROM BBS ORDER BY bbsID DESC";
 		try {
@@ -55,6 +62,9 @@ public class BbsDAO {
 
 	}
 
+	
+	
+//	실제로 글을 작성하는 함수
 	public int write(String bbsTitle, String userID, String bbsContent) {
 		String SQL = "INSERT INTO bbs (bbsID, bbsTitle, userID, bbsDate, bbsContent, bbsAvailable) VALUES(?, ?, ?, ?, ?, ?)";
 //		String SQL = "INSERT INTO BBS VALUES (?, ?, ?, ?, ?, ?)";
@@ -66,6 +76,7 @@ public class BbsDAO {
 			pstmt.setString(4, getDate());
 			pstmt.setString(5, bbsContent);
 			pstmt.setInt(6, 1);
+			
 			return pstmt.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -73,12 +84,22 @@ public class BbsDAO {
 		return -1; // 데이터베이스 오류
 	}
 	
+	
+	
+// DB에서 글 목록 가져오는 소스코드는 BbsDAO.java에
+// 리스트에 담아 반환해주는 ArrayList<Bbs> 함수 생성
+
 	public ArrayList<Bbs> getList(int pageNumber) {
-		String SQL = "SELECT * FROM BBS WHERE bbsID < ? AND bbsAvailable = 1 ORDER BY bbsID DESC LIMIT 10";
+		
+		// Mysql 용 게시글목록 표기
+//		String SQL = "SELECT * FROM BBS WHERE bbsID < ? AND bbsAvailable = 1 ORDER BY bbsID DESC LIMIT 10";
+		String SQL = "SELECT * FROM BBS WHERE bbsID < ? AND bbsAvailable = 1 AND ROWNUM <= 10 ORDER BY bbsID DESC ";
+		
+		
 		ArrayList<Bbs> list = new ArrayList<Bbs>();
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(SQL);
-			pstmt.setInt(1,  getNext() - (pageNumber - 1) * 10);
+			pstmt.setInt(1, getNext() - (pageNumber - 1) * 10);
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				Bbs bbs = new Bbs();
@@ -112,28 +133,28 @@ public class BbsDAO {
 		return false;
 	}
 	
-//	public Bbs getBbs(int bbsID) {
-//		String SQL = "SELECT * FROM BBS WHERE bbsID =?";
-//		try {
-//			PreparedStatement pstmt = conn.prepareStatement(SQL);
-//			pstmt.setInt(1, bbsID);
-//			rs = pstmt.executeQuery();
-//			if (rs.next()) {
-//				Bbs bbs = new Bbs();
-//				bbs.setBbsID(rs.getInt(1));
-//				bbs.setBbsTitle(rs.getString(2));
-//				bbs.setUserID(rs.getString(3));
-//				bbs.setBbsDate(rs.getString(4));
-//				bbs.setBbsContent(rs.getString(5));
-//				bbs.setBbsAvailable(rs.getInt(6));
-//				return bbs;
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		return null;
-//		
-//	}
+	public Bbs getBbs(int bbsID) {
+		String SQL = "SELECT * FROM BBS WHERE bbsID =?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, bbsID);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				Bbs bbs = new Bbs();
+				bbs.setBbsID(rs.getInt(1));
+				bbs.setBbsTitle(rs.getString(2));
+				bbs.setUserID(rs.getString(3));
+				bbs.setBbsDate(rs.getString(4));
+				bbs.setBbsContent(rs.getString(5));
+				bbs.setBbsAvailable(rs.getInt(6));
+				return bbs;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+	}
 	
 
 }
