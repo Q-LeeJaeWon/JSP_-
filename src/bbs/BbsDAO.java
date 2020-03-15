@@ -21,11 +21,15 @@ public class BbsDAO {
 			String dbPassword = "12341234";
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
 
 //	현재의 시간을 가져오는 함수
 	public String getDate() {
@@ -133,6 +137,9 @@ public class BbsDAO {
 		return false;
 	}
 	
+	
+	
+	// 글 내용 불러오는 내용 함수 추가
 	public Bbs getBbs(int bbsID) {
 		String SQL = "SELECT * FROM BBS WHERE bbsID =?";
 		try {
